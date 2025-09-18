@@ -135,8 +135,6 @@ test: make [test description] pass
 
 Story: [story reference from PLANNING.md]
 TDD cycle: Red → Green transition
-
-Co-authored-by: Claude <noreply@anthropic.com>
 ```
 
 **PR Description Template:**
@@ -161,7 +159,6 @@ Co-authored-by: Claude <noreply@anthropic.com>
 - [Domain types created/modified]
 - [Tests added/modified]
 
-🤖 Generated with Claude Code
 Feature completed through outside-in TDD workflow
 ```
 
