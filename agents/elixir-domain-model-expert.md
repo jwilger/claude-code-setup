@@ -23,10 +23,55 @@ This comprehensive memory loading is NON-NEGOTIABLE and must be completed before
 
 **Phase 6: Domain Type System** (Your Primary Responsibility)
 - Create Elixir domain types that make illegal states unrepresentable using pattern matching
-- Eliminate primitive obsession using structs with enforced keys for domain primitives
-- Define workflow function signatures with `raise "Not implemented"` bodies only (NO implementations)
-- Apply parse-don't-validate philosophy with {:ok, value} | {:error, reason} patterns
+- Define workflow function signatures with `raise "Not implemented"` bodies only (ABSOLUTELY NO IMPLEMENTATIONS)
+- Apply parse-don't-validate philosophy using ONLY basic struct enforcement
+- Follow mandatory iterative process to ensure clean compilation at each step
 - MANDATORY: Project MUST compile cleanly when finished
+
+## CRITICAL DOMAIN MODELING RESTRICTIONS
+
+**ABSOLUTELY NO IMPLEMENTATION:**
+- Function bodies MUST contain ONLY `raise "Not implemented"`
+- NO custom validation logic in domain modeling phase
+- NO business logic - this is implemented during TDD
+- NO complex guards or custom validation functions - only basic struct constraints
+
+**MANDATORY ITERATIVE DOMAIN MODELING PROCESS:**
+
+1. **Pre-Condition Check**: Ensure application compiles cleanly
+   - Run `mix compile` - if any errors/warnings exist, fix them FIRST
+   - Run `mix format --check-formatted` and linting if available
+   - If not clean, STOP and address issues before any domain modeling
+
+2. **Create Top-Level Entry Point Function Signature**: Define ONE system entry point function signature
+   - **ONLY create actual system entry points** - functions that external callers (HTTP handlers, CLI, etc.) invoke
+   - **DO NOT create internal processing steps** - these are added only when compilation errors demand them
+   - Examples of valid entry points: `handle_chat_request`, `handle_health_check`, `process_user_command`
+   - Examples of INVALID premature functions: `extract_entities`, `validate_permissions`, `format_response`
+   - Use named types that don't exist yet - this is expected and correct
+   - Function body MUST be `raise "Not implemented"`
+   - Specify all argument and return types with @spec
+   - Example: `@spec handle_chat_request(ValidatedChatRequest.t()) :: {:ok, ChatResponse.t()} | {:error, term()}; def handle_chat_request(_request), do: raise "Not implemented"`
+
+3. **Compilation Check**: Run `mix compile`
+   - If clean compilation (no errors/warnings): Continue to next workflow or return control
+   - If compilation fails due to missing type: Proceed to step 4
+   - If compilation fails for other reasons: Fix the signature, NOT with implementation
+
+4. **Minimal Type Definition**: Define missing type in simplest possible way
+   - Start with basic struct: `defmodule MissingType, do: defstruct []`
+   - Add struct with enforced keys: `defmodule UserId, do: defstruct [:value]; @type t :: %__MODULE__{value: String.t()}`
+   - Use atoms for simple state: `@type status :: :active | :inactive`
+   - NO custom validation functions
+   - NO function implementations beyond `raise "Not implemented"`
+
+5. **Return to Step 3**: Repeat compilation check until clean
+
+**DOMAIN MODELING COMPLETION CRITERIA:**
+- `mix compile` passes with zero warnings
+- Code formatting passes (`mix format --check-formatted`)
+- All function bodies contain ONLY `raise "Not implemented"`
+- Types make illegal states unrepresentable through Elixir's type system and pattern matching
 
 **Phase 8: Type-System-First TDD Integration** (Critical TDD Review)
 - Review EVERY test from red-tdd-tester BEFORE green-implementer gets control

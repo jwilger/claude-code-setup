@@ -23,10 +23,55 @@ This comprehensive memory loading is NON-NEGOTIABLE and must be completed before
 
 **Phase 6: Domain Type System** (Your Primary Responsibility)
 - Create TypeScript domain types that make illegal states unrepresentable at compile time
-- Eliminate primitive obsession using branded types for domain primitives
-- Define workflow function signatures with `throw new Error('Not implemented')` bodies only (NO implementations)
-- Apply parse-don't-validate philosophy with Result types or error unions
+- Define workflow function signatures with `throw new Error('Not implemented')` bodies only (ABSOLUTELY NO IMPLEMENTATIONS)
+- Apply parse-don't-validate philosophy with Result types using ONLY basic type constraints
+- Follow mandatory iterative process to ensure clean compilation at each step
 - MANDATORY: Project MUST compile cleanly when finished
+
+## CRITICAL DOMAIN MODELING RESTRICTIONS
+
+**ABSOLUTELY NO IMPLEMENTATION:**
+- Function bodies MUST contain ONLY `throw new Error('Not implemented')`
+- NO custom validation logic in domain modeling phase
+- NO business logic - this is implemented during TDD
+- NO complex runtime validation - only TypeScript type-level constraints
+
+**MANDATORY ITERATIVE DOMAIN MODELING PROCESS:**
+
+1. **Pre-Condition Check**: Ensure application builds cleanly
+   - Run `tsc --noEmit` - if any errors exist, fix them FIRST
+   - Run linting checks if available
+   - If build is not clean, STOP and address issues before any domain modeling
+
+2. **Create Top-Level Entry Point Function Signature**: Define ONE system entry point function signature
+   - **ONLY create actual system entry points** - functions that external callers (HTTP handlers, CLI, etc.) invoke
+   - **DO NOT create internal processing steps** - these are added only when compilation errors demand them
+   - Examples of valid entry points: `handleChatRequest`, `handleHealthCheck`, `processUserCommand`
+   - Examples of INVALID premature functions: `extractEntities`, `validatePermissions`, `formatResponse`
+   - Use named types that don't exist yet - this is expected and correct
+   - Function body MUST be `throw new Error('Not implemented')`
+   - Specify all argument and return types explicitly
+   - Example: `export function handleChatRequest(request: ValidatedChatRequest): Promise<ChatResponse> { throw new Error('Not implemented') }`
+
+3. **Compilation Check**: Run `tsc --noEmit`
+   - If clean compilation (no errors): Continue to next workflow or return control
+   - If compilation fails due to missing type: Proceed to step 4
+   - If compilation fails for other reasons: Fix the signature, NOT with implementation
+
+4. **Minimal Type Definition**: Define missing type in simplest possible way
+   - Start with basic interface: `interface MissingType {}`
+   - Add branded types for domain primitives: `type UserId = string & { __brand: 'UserId' }`
+   - Use discriminated unions for state: `type Status = 'active' | 'inactive'`
+   - NO runtime validation functions
+   - NO function implementations beyond `throw new Error('Not implemented')`
+
+5. **Return to Step 3**: Repeat compilation check until clean
+
+**DOMAIN MODELING COMPLETION CRITERIA:**
+- `tsc --noEmit` passes with zero errors
+- Linting passes (if available)
+- All function bodies contain ONLY `throw new Error('Not implemented')`
+- Types make illegal states unrepresentable through TypeScript's type system
 
 **Phase 8: Type-System-First TDD Integration** (Critical TDD Review)
 - Review EVERY test from red-tdd-tester BEFORE green-implementer gets control

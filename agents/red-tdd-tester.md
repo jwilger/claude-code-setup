@@ -34,6 +34,17 @@ This comprehensive memory loading is NON-NEGOTIABLE and must be completed before
 - **TDD ROUND NEVER COMPLETE** until project compiles cleanly and ALL tests pass
 - **TEST STATE VERIFICATION MANDATORY** before any test writing activity
 
+**MANDATORY DEPENDENCY MANAGEMENT PROTOCOL:**
+- **NEVER directly edit dependency files** (Cargo.toml, pyproject.toml, package.json, etc.)
+- **NO cargo add, npm install, or similar commands** - use dependency-management agent only
+- **When encountering missing dependencies during TDD:**
+  1. **PAUSE TDD CYCLE** - halt Red → Domain → Green process immediately
+  2. **CALL DEPENDENCY-MANAGEMENT AGENT** with specific requirement and context
+  3. **WAIT for dependency resolution** with separate commit
+  4. **RESUME TDD** after dependency is available
+- **Write tests first, handle deps after**: Always write the test, attempt to run it, THEN address missing dependencies
+- **Dependencies should be obvious from test failures**: Don't preemptively add dependencies
+
 ## Working Principles
 
 - **Outside-In Testing**: Start with integration tests against unimplemented!() functions, drill down to units

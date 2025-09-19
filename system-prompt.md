@@ -163,8 +163,51 @@ The following workflow MUST be followed in strict sequential order. Each phase h
 **Agent**: domain-modeling agent (language-specific)
 **Input**: ARCHITECTURE.md and EVENT_MODEL.md
 **Output**: Type definitions with unimplemented! function signatures only
-**Process**: If external dependencies needed, call dependency-management agent first
-**Gate**: Types that make illegal states unrepresentable
+**Process**: Iterative type definition following strict no-implementation rules
+**Gate**: Types that make illegal states unrepresentable with clean compilation
+
+**CRITICAL DOMAIN MODELING RESTRICTIONS:**
+- **ABSOLUTELY NO IMPLEMENTATION** - Only type signatures and `unimplemented!()` bodies
+- **NO CUSTOM VALIDATION LOGIC** - Only built-in language validations (e.g., nutype basic validations)
+- **NO COMPLEX VALIDATION RULES** - Custom validation implemented during TDD, not domain modeling
+- **NO BUSINESS LOGIC** - Function bodies must only contain `unimplemented!()`
+
+**MANDATORY ITERATIVE DOMAIN MODELING PROCESS:**
+1. **Pre-Condition Check**: Ensure application builds cleanly with no warnings, test failures, or linter errors
+   - If issues exist, STOP and address them first before any domain modeling
+   - Run all pre-commit hook checks if available
+
+2. **Create Top-Level Entry Point Function Signature**: Define ONE system entry point function signature
+   - **FIRST**: Check what entry point functions already exist - DO NOT create redundant wrappers
+   - **ONLY create actual system entry points** - functions that external callers (HTTP handlers, CLI, etc.) invoke
+   - **DO NOT create internal processing steps** - these are added only when compilation errors demand them
+   - **DO NOT create wrapper functions** - if `process_chat_request` exists, don't create `handle_chat_request` that just calls it
+   - Examples of valid entry points: `process_chat_request`, `handle_health_check`, `process_user_command`
+   - Examples of INVALID premature functions: `extract_entities`, `validate_permissions`, `format_response`
+   - Examples of INVALID wrapper functions: `handle_chat_request` when `process_chat_request` already exists
+   - Use named types that don't exist yet - this is expected and correct
+   - Function body MUST be `unimplemented!()`
+   - Specify all argument and return types explicitly
+
+3. **Compilation Check**: Attempt to compile
+   - If clean compilation (no warnings, test failures, linter errors): Continue to next workflow or return control
+   - If compilation fails due to missing type: Proceed to step 4
+   - If compilation fails for other reasons: Fix the signature, not with implementation
+
+4. **Minimal Type Definition**: Define missing type in simplest possible way
+   - Rust example: `struct MissingType;` or basic enum
+   - Use built-in validations only (e.g., `#[nutype(validate(not_empty))]`)
+   - NO custom predicates, NO complex validation logic
+   - NO function bodies beyond `unimplemented!()`
+
+5. **Return to Step 3**: Repeat compilation check until clean
+
+**DOMAIN MODELING COMPLETION CRITERIA:**
+- Application compiles cleanly with zero warnings
+- All tests pass (if any exist)
+- All linter/pre-commit checks pass
+- ALL function bodies contain ONLY `unimplemented!()`
+- Types make illegal states unrepresentable through structure, not validation logic
 
 ### Phase 7: Outside-In TDD Implementation (Directly from Domain Types)
 **Process**: Begin TDD implementation directly from complete domain model with hierarchical chained PRs

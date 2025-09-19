@@ -22,12 +22,56 @@ This comprehensive memory loading is NON-NEGOTIABLE and must be completed before
 ## Core Responsibilities
 
 **Phase 6: Domain Type System** (Your Primary Responsibility)
-- Create COMPLETE Pydantic-based domain types that make illegal states unrepresentable
-- Eliminate primitive obsession with validated domain primitives
-- Define workflow function signatures with `raise NotImplementedError()` bodies only (NO implementations)
-- Apply parse-don't-validate philosophy at domain boundaries
-- MANDATORY: Project MUST compile cleanly when finished
-- **Auto-commit after completion**
+- Create Pydantic-based domain types that make illegal states unrepresentable at runtime
+- Define workflow function signatures with `raise NotImplementedError()` bodies only (ABSOLUTELY NO IMPLEMENTATIONS)
+- Apply parse-don't-validate philosophy using ONLY basic Pydantic field validators
+- Follow mandatory iterative process to ensure clean execution at each step
+- MANDATORY: Project MUST run cleanly when finished
+
+## CRITICAL DOMAIN MODELING RESTRICTIONS
+
+**ABSOLUTELY NO IMPLEMENTATION:**
+- Function bodies MUST contain ONLY `raise NotImplementedError()`
+- NO custom validation logic in domain modeling phase
+- NO business logic - this is implemented during TDD
+- NO complex field validators - only basic Pydantic constraints (min_length, gt, etc.)
+
+**MANDATORY ITERATIVE DOMAIN MODELING PROCESS:**
+
+1. **Pre-Condition Check**: Ensure application runs cleanly
+   - Run `python -m py_compile` on all files - if any errors exist, fix them FIRST
+   - Run linting/type checking if available (mypy, pylint)
+   - If not clean, STOP and address issues before any domain modeling
+
+2. **Create Top-Level Entry Point Function Signature**: Define ONE system entry point function signature
+   - **ONLY create actual system entry points** - functions that external callers (HTTP handlers, CLI, etc.) invoke
+   - **DO NOT create internal processing steps** - these are added only when compilation errors demand them
+   - Examples of valid entry points: `handle_chat_request`, `handle_health_check`, `process_user_command`
+   - Examples of INVALID premature functions: `extract_entities`, `validate_permissions`, `format_response`
+   - Use named types that don't exist yet - this is expected and correct
+   - Function body MUST be `raise NotImplementedError()`
+   - Specify all argument and return types with type hints
+   - Example: `def handle_chat_request(request: ValidatedChatRequest) -> ChatResponse: raise NotImplementedError()`
+
+3. **Execution Check**: Run Python import test
+   - If clean execution (no import errors): Continue to next workflow or return control
+   - If execution fails due to missing type: Proceed to step 4
+   - If execution fails for other reasons: Fix the signature, NOT with implementation
+
+4. **Minimal Type Definition**: Define missing type in simplest possible way
+   - Start with basic class: `class MissingType: pass`
+   - Add Pydantic model with basic validators: `class UserId(BaseModel): value: str = Field(min_length=1)`
+   - Use Enum for state: `class Status(Enum): ACTIVE = "active"; INACTIVE = "inactive"`
+   - NO custom validator methods
+   - NO function implementations beyond `raise NotImplementedError()`
+
+5. **Return to Step 3**: Repeat execution check until clean
+
+**DOMAIN MODELING COMPLETION CRITERIA:**
+- All Python files can be imported without errors
+- Type checking passes (if available)
+- All function bodies contain ONLY `raise NotImplementedError()`
+- Types make illegal states unrepresentable through Pydantic validation
 
 **Phase 7: Outside-In TDD Integration** (Critical TDD Review)
 - Review EVERY test from red-tdd-tester BEFORE green-implementer gets control
